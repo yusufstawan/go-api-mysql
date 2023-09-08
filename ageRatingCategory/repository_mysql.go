@@ -1,4 +1,4 @@
-package movie
+package ageRatingCategory
 
 import (
 	"api-mysql/config"
@@ -12,14 +12,14 @@ import (
 )
 
 const (
-	table          = "movie"
+	table          = "age_rating_category"
 	layoutDateTime = "2006-01-02 15:04:05"
 )
 
-// GetAll Movie
-func GetAll(ctx context.Context) ([]models.Movie, error) {
+// GetAll AgeRatingCategory
+func GetAll(ctx context.Context) ([]models.AgeRatingCategory, error) {
 
-	var movies []models.Movie
+	var ratings []models.AgeRatingCategory
 
 	db, err := config.MySQL()
 
@@ -36,48 +36,47 @@ func GetAll(ctx context.Context) ([]models.Movie, error) {
 	}
 
 	for rowQuery.Next() {
-		var movie models.Movie
+		var rating models.AgeRatingCategory
 		var createdAt, updatedAt string
 
-		if err = rowQuery.Scan(&movie.ID,
-			&movie.Title,
-			&movie.Year,
+		if err = rowQuery.Scan(&rating.ID,
+			&rating.Name,
+			&rating.Description,
 			&createdAt,
 			&updatedAt); err != nil {
 			return nil, err
 		}
 
 		//  Change format string to datetime for created_at and updated_at
-		movie.CreatedAt, err = time.Parse(layoutDateTime, createdAt)
+		rating.CreatedAt, err = time.Parse(layoutDateTime, createdAt)
 
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		movie.UpdatedAt, err = time.Parse(layoutDateTime, updatedAt)
+		rating.UpdatedAt, err = time.Parse(layoutDateTime, updatedAt)
 
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		movies = append(movies, movie)
+		ratings = append(ratings, rating)
 	}
 
-	return movies, nil
+	return ratings, nil
 }
 
-// Insert Movie
-func Insert(ctx context.Context, movie models.Movie) error {
+// Insert AgeRatingCategory
+func Insert(ctx context.Context, rating models.AgeRatingCategory) error {
 	db, err := config.MySQL()
 
 	if err != nil {
 		log.Fatal("Can't connect to MySQL", err)
 	}
 
-	queryText := fmt.Sprintf("INSERT INTO %v (title, year, created_at, updated_at, age_rating_category_id) values('%v',%v, NOW(), NOW(), %v)", table,
-		movie.Title,
-		movie.Year,
-		movie.AgeRatingCategoryID)
+	queryText := fmt.Sprintf("INSERT INTO %v (name, description, created_at, updated_at) values('%v','%v', NOW(), NOW())", table,
+		rating.Name,
+		rating.Description)
 
 	_, err = db.ExecContext(ctx, queryText)
 
@@ -87,8 +86,8 @@ func Insert(ctx context.Context, movie models.Movie) error {
 	return nil
 }
 
-// Update Movie
-func Update(ctx context.Context, movie models.Movie, id string) error {
+// Update AgeRatingCategory
+func Update(ctx context.Context, rating models.AgeRatingCategory, id string) error {
 
 	db, err := config.MySQL()
 
@@ -96,11 +95,10 @@ func Update(ctx context.Context, movie models.Movie, id string) error {
 		log.Fatal("Can't connect to MySQL", err)
 	}
 
-	queryText := fmt.Sprintf("UPDATE %v set title ='%s', year = %d, updated_at = NOW(), age_rating_category_id=%v where id = %s",
+	queryText := fmt.Sprintf("UPDATE %v set name ='%s', description = '%s', updated_at = NOW() where id = %s",
 		table,
-		movie.Title,
-		movie.Year,
-		movie.AgeRatingCategoryID,
+		rating.Name,
+		rating.Description,
 		id,
 	)
 	fmt.Println(queryText)
@@ -114,7 +112,7 @@ func Update(ctx context.Context, movie models.Movie, id string) error {
 	return nil
 }
 
-// Delete Movie
+// Delete AgeRatingCategory
 func Delete(ctx context.Context, id string) error {
 	db, err := config.MySQL()
 
